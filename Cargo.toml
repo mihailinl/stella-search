@@ -1,0 +1,74 @@
+[package]
+name = "stella-search"
+version = "0.1.0"
+edition = "2024"
+authors = ["Misha"]
+license = "MIT"
+description = "Lightweight file indexing service for Stella AI"
+repository = "https://github.com/misha/stella-search"
+readme = "README.md"
+keywords = ["file-search", "indexing", "sqlite", "fts5"]
+categories = ["command-line-utilities", "filesystem"]
+
+[dependencies]
+# Database
+rusqlite = { version = "0.32", features = ["bundled", "backup"] }
+
+# File watching
+notify = "7.0"
+notify-debouncer-full = "0.4"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Configuration
+directories = "5"
+toml = "0.8"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Glob patterns
+glob = "0.3"
+globset = "0.4"
+
+# Directory walking
+walkdir = "2"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Error handling
+anyhow = "1"
+thiserror = "2"
+
+# Platform-specific
+[target.'cfg(windows)'.dependencies]
+windows-service = "0.7"
+# MFT/USN Journal for fast file enumeration (Everything-like speed)
+# ntfs-reader provides: name, path, is_directory, size, created, modified, accessed
+ntfs-reader = "0.4"
+# Windows API for drive enumeration
+windows-sys = { version = "0.59", features = ["Win32_Storage_FileSystem"] }
+
+[target.'cfg(unix)'.dependencies]
+nix = { version = "0.29", features = ["fs", "socket"] }
+
+[profile.release]
+opt-level = "z"      # Optimize for size
+lto = true           # Link-time optimization
+codegen-units = 1    # Single codegen unit
+panic = "abort"      # Smaller binary
+strip = true         # Strip symbols
+
+[profile.dev]
+opt-level = 0
+debug = true

@@ -1,0 +1,87 @@
+StellaSearch Source Available License
+
+Copyright (c) 2025 Mihailin. All rights reserved.
+
+TERMS AND CONDITIONS
+
+1. DEFINITIONS
+
+"Software" means the StellaSearch file indexing service source code and
+associated documentation files.
+
+"Stella" means the Stella AI assistant application developed by the copyright
+holder.
+
+"You" means the individual or entity exercising rights under this License.
+
+2. GRANT OF RIGHTS
+
+Subject to the terms of this License, you are granted the following limited rights:
+
+a) VIEW AND AUDIT: You may view, read, and audit the source code solely for
+   the purpose of verifying that the Software does not contain malicious code,
+   viruses, or unauthorized data collection.
+
+b) PERSONAL USE WITH STELLA: You may compile and use the Software solely in
+   conjunction with Stella for your own personal, non-commercial purposes.
+
+c) BUG REPORTS: You may submit bug reports and security vulnerability
+   disclosures to the copyright holder.
+
+3. RESTRICTIONS
+
+You may NOT:
+
+a) Use the Software for any commercial purpose or in any commercial product
+   or service.
+
+b) Use the Software independently of Stella or integrate it with any other
+   application, product, or service.
+
+c) Modify, adapt, translate, or create derivative works based on the Software.
+
+d) Distribute, sublicense, sell, rent, lease, or otherwise transfer the
+   Software or any rights therein to any third party.
+
+e) Use the name "Stella", "StellaSearch", or any related trademarks, logos,
+   or branding in any manner without prior written permission.
+
+f) Remove or alter any copyright notices, license terms, or attribution
+   contained in the Software.
+
+g) Reverse engineer, decompile, or disassemble any compiled binaries of the
+   Software, except to the extent required by applicable law.
+
+4. INTELLECTUAL PROPERTY
+
+The Software and all copies thereof are proprietary to and the property of
+the copyright holder. All rights in the Software not specifically granted
+in this License are reserved by the copyright holder.
+
+5. TRADEMARK
+
+"Stella", "StellaSearch", and related logos and names are trademarks of the
+copyright holder. This License does not grant permission to use these
+trademarks except as required for reasonable and customary use in describing
+the origin of the Software.
+
+6. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+7. TERMINATION
+
+This License is effective until terminated. Your rights under this License
+will terminate automatically without notice if you fail to comply with any
+of its terms. Upon termination, you must destroy all copies of the Software
+in your possession.
+
+8. GOVERNING LAW
+
+This License shall be governed by and construed in accordance with applicable
+law, without regard to its conflict of law provisions.
