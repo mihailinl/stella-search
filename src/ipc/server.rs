@@ -1,5 +1,7 @@
 //! IPC server implementation
 
+use std::sync::Arc;
+
 use anyhow::Result;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tracing::{info, warn, error, debug};
@@ -7,19 +9,21 @@ use tracing::{info, warn, error, debug};
 use crate::config::Config;
 use crate::database::Database;
 use crate::indexer::Indexer;
+use crate::search::{SearchQuery, SearchManager};
 use super::protocol::{Request, Response};
 
 /// IPC server for handling client requests
 pub struct IpcServer {
-    db: Database,
+    db: Arc<Database>,
     indexer: Indexer,
     config: Config,
+    search_manager: Arc<SearchManager>,
 }
 
 impl IpcServer {
     /// Create a new IPC server
-    pub fn new(db: Database, indexer: Indexer, config: Config) -> Self {
-        Self { db, indexer, config }
+    pub fn new(db: Arc<Database>, indexer: Indexer, config: Config, search_manager: Arc<SearchManager>) -> Self {
+        Self { db, indexer, config, search_manager }
     }
 
     /// Run the IPC server
@@ -42,14 +46,33 @@ impl IpcServer {
                 query,
                 max_results,
                 extensions,
-                directories: _,
+                directories,
             } => {
                 let max = max_results.unwrap_or(50);
-                let ext = extensions.as_ref().and_then(|e| e.first()).map(|s| s.as_str());
 
-                match self.db.search(&query, max, ext) {
-                    Ok(results) => Response::search_result(results),
-                    Err(e) => Response::error(format!("Search failed: {}", e)),
+                // Build search query
+                let mut search_query = SearchQuery::new(&query, max);
+
+                // Add extension filter if provided
+                if let Some(exts) = &extensions {
+                    if let Some(first_ext) = exts.first() {
+                        search_query = search_query.with_extension(first_ext);
+                    }
+                }
+
+                // Add directory filter if provided
+                if let Some(dirs) = directories {
+                    search_query = search_query.with_directories(dirs);
+                }
+
+                // Use SearchManager for the search
+                let result = self.search_manager.search(&search_query);
+
+                // Convert to response format
+                Response::SearchResult {
+                    files: result.files,
+                    total_found: result.total_found,
+                    query_time_ms: result.query_time_ms,
                 }
             }
 
@@ -99,6 +122,12 @@ impl IpcServer {
                         stats.is_scanning = self.indexer.is_scanning();
                         stats.scan_progress = self.indexer.get_scan_progress();
                         stats.current_scan_path = self.indexer.get_current_scan_path();
+
+                        // If using Windows Search, set indexed files to 0 since we're not indexing
+                        if !self.search_manager.needs_indexing() {
+                            debug!("Using Windows Search - no local indexing");
+                        }
+
                         Response::status(stats)
                     }
                     Err(e) => Response::error(format!("Failed to get stats: {}", e)),

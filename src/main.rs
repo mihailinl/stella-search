@@ -1,13 +1,16 @@
 //! StellaSearch - Lightweight file indexing service for Stella AI
 //!
 //! A cross-platform file indexing service that provides fast file search
-//! using SQLite FTS5 full-text search.
+//! using SQLite FTS5 full-text search or Windows Search (when available).
 
 mod config;
 mod database;
 mod indexer;
 mod ipc;
 mod platform;
+mod search;
+
+use std::sync::Arc;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -18,6 +21,7 @@ use crate::config::Config;
 use crate::database::Database;
 use crate::indexer::Indexer;
 use crate::ipc::IpcServer;
+use crate::search::SearchManager;
 
 /// StellaSearch - Lightweight file indexing service
 #[derive(Parser)]
@@ -167,34 +171,46 @@ async fn main() -> Result<()> {
 async fn run_daemon() -> Result<()> {
     // Load configuration
     let config = Config::load()?;
-    info!("Configuration loaded: mode={}", config.indexing.mode);
+    info!("Configuration loaded: mode={}, search_backend={:?}",
+          config.indexing.mode, config.search.backend);
 
     // Initialize database
-    let db = Database::new(&config)?;
+    let db = Arc::new(Database::new(&config)?);
     db.init_schema()?;
     info!("Database initialized");
 
+    // Create search manager
+    let search_manager = Arc::new(SearchManager::new(config.search.backend.clone(), db.clone()));
+    info!("Search backend: {}", search_manager.active_backend_name());
+
     // Create indexer
-    let indexer = Indexer::new(db.clone(), config.clone());
+    let indexer = Indexer::new((*db).clone(), config.clone());
 
-    // Start initial indexing in background
-    let indexer_clone = indexer.clone();
-    tokio::spawn(async move {
-        if let Err(e) = indexer_clone.start_initial_scan().await {
-            tracing::error!("Initial scan failed: {}", e);
-        }
-    });
+    // Only start indexing if needed (not using Windows Search as primary)
+    if search_manager.needs_indexing() {
+        info!("Starting local indexing...");
 
-    // Start file watcher
-    let watcher_indexer = indexer.clone();
-    tokio::spawn(async move {
-        if let Err(e) = watcher_indexer.start_watcher().await {
-            tracing::error!("File watcher failed: {}", e);
-        }
-    });
+        // Start initial indexing in background
+        let indexer_clone = indexer.clone();
+        tokio::spawn(async move {
+            if let Err(e) = indexer_clone.start_initial_scan().await {
+                tracing::error!("Initial scan failed: {}", e);
+            }
+        });
+
+        // Start file watcher
+        let watcher_indexer = indexer.clone();
+        tokio::spawn(async move {
+            if let Err(e) = watcher_indexer.start_watcher().await {
+                tracing::error!("File watcher failed: {}", e);
+            }
+        });
+    } else {
+        info!("Using Windows Search - skipping local indexing");
+    }
 
     // Start IPC server (blocks until shutdown)
-    let ipc_server = IpcServer::new(db, indexer, config);
+    let ipc_server = IpcServer::new(db, indexer, config, search_manager);
     ipc_server.run().await?;
 
     Ok(())

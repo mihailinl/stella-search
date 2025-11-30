@@ -17,6 +17,9 @@ pub struct Config {
     pub indexing: IndexingConfig,
 
     #[serde(default)]
+    pub search: SearchConfig,
+
+    #[serde(default)]
     pub watch: WatchConfig,
 
     #[serde(default)]
@@ -43,6 +46,38 @@ pub struct IndexingConfig {
     /// Mode: "everything" or "selected"
     #[serde(default = "default_mode")]
     pub mode: String,
+}
+
+/// Search backend configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SearchConfig {
+    /// Search backend: "auto", "windows", or "sqlite"
+    /// - "auto" = Windows Search if available, else SQLite (default)
+    /// - "windows" = Force Windows Search (falls back if unavailable)
+    /// - "sqlite" = Force custom SQLite indexer
+    #[serde(default)]
+    pub backend: SearchBackendType,
+}
+
+/// Search backend type
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum SearchBackendType {
+    /// Auto-detect: Windows Search if available, else SQLite
+    #[default]
+    Auto,
+    /// Force Windows Search (on Windows only)
+    Windows,
+    /// Force SQLite-based search
+    Sqlite,
+}
+
+impl Default for SearchConfig {
+    fn default() -> Self {
+        Self {
+            backend: SearchBackendType::default(),
+        }
+    }
 }
 
 /// Watch paths configuration
@@ -255,6 +290,7 @@ impl Default for Config {
         let (config_path, db_path) = Self::get_default_paths();
         Self {
             indexing: IndexingConfig::default(),
+            search: SearchConfig::default(),
             watch: WatchConfig::default(),
             watcher: WatcherConfig::default(),
             service: ServiceConfig::default(),
