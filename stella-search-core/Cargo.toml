@@ -1,0 +1,11 @@
+[package]
+name = "stella-search-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Shared types for stella-search"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }

@@ -1,0 +1,30 @@
+[package]
+name = "stella-search-native"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Native library for system search (Windows Search, Tracker)"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+stella-search-core = { path = "../stella-search-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Windows Search via direct COM/OLE DB (no PowerShell, no window flash)
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_System_Ole",
+    "Win32_System_Variant",
+    "Win32_System_Services",
+    "Win32_Globalization",
+] }
+
+# Linux Tracker via D-Bus (future)
+[target.'cfg(unix)'.dependencies]
+# zbus = "4"  # Uncomment when implementing Tracker support
